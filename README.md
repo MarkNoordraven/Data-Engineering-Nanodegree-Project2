@@ -1,3 +1,11 @@
+## Project: Data Warehouse
+Second project in the [Udacity Data Engineering Nanodegree](https://www.udacity.com/course/data-engineer-nanodegree--nd027)
+
+
+![https://confirm.udacity.com/PLQJPKUN](https://github.com/MarkNoordraven/Data-Engineering-Nanodegree-CapstoneProject/blob/master/Data%20Engineering%20certificate.PNG)
+
+
+
 ### Introduction
 Sparkify is startup operating a music streaming app.
 
@@ -50,7 +58,8 @@ First we create two staging tables as an intermediary step. We will read from th
 
 A table `staging_events_copy` collects the JSON logs with the following SQL query:
 
-```staging_events_copy = ("""COPY staging_events 
+```
+staging_events_copy = ("""COPY staging_events 
                           FROM {}
                           credentials 'aws_iam_role={}'   
                           JSON {}  
@@ -58,11 +67,13 @@ A table `staging_events_copy` collects the JSON logs with the following SQL quer
                           region 'us-west-2';
                         """).format(config.get("S3","LOG_DATA"), 
                                     config.get("IAM_ROLE", "ARN"), 
-                                    config.get("S3", "LOG_JSONPATH"))```
+                                    config.get("S3", "LOG_JSONPATH"))
+```
 
 A table `staging_songs_copy` collects the JSON song metadata with the following SQL query:
 
-```staging_songs_copy = ("""COPY staging_songs
+```
+staging_songs_copy = ("""COPY staging_songs
                          FROM {}
                          credentials 'aws_iam_role={}'
                          JSON 'auto'
@@ -70,12 +81,13 @@ A table `staging_songs_copy` collects the JSON song metadata with the following 
                          compupdate off
                          region 'us-west-2';
                       """).format(config.get("S3","SONG_DATA"), 
-                                  config.get("IAM_ROLE", "ARN"))```
-                                  
+                                  config.get("IAM_ROLE", "ARN"))
+```                               
 
 After the staging tables have been created, we insert data into the fact table:
 
-```songplay_table_insert = 
+```
+songplay_table_insert = 
 ("""INSERT INTO songplays (start_time,
                            user_id,
                            level,
@@ -109,10 +121,12 @@ After the staging tables have been created, we insert data into the fact table:
           AND staging_events.useragent IS NOT NULL
           AND songplays.songplay_id is NULL
     ORDER BY start_time, user_id;
- """)```
+ """)
+ ```
  
 We also insert data from the staging tables into the dimensional tables:
-```user_table_insert = 
+```
+user_table_insert = 
 ("""INSERT INTO users
     SELECT DISTINCT userid AS user_id,
                     firstname AS first_name,
@@ -123,16 +137,20 @@ We also insert data from the staging tables into the dimensional tables:
     WHERE user_id IS NOT NULL
     GROUP BY user_id, first_name, last_name, gender, level
     ORDER BY user_id;
- """)```
+ """)
+ ```
 
-```song_table_insert = 
+```
+song_table_insert = 
 ("""INSERT INTO songs (song_id, title, artist_id, year, duration)
     SELECT DISTINCT song_id, title, artist_id, year, duration
     FROM staging_songs
     WHERE song_id IS NOT NULL
- """)```
+ """)
+ ```
 
-```artist_table_insert = 
+```
+artist_table_insert = 
 ("""INSERT INTO artists (artist_id,
                          name,
                          location,
@@ -145,9 +163,11 @@ We also insert data from the staging tables into the dimensional tables:
                      artist_longitude)
     FROM staging_songs
     WHERE song_id IS NOT NULL
- """)```
+ """)
+ ```
 
-```time_table_insert = 
+```
+time_table_insert = 
 ("""INSERT INTO time
     SELECT DISTINCT ts AS start_time,
                     date_part(hour, '1970-01-01'::date + ts/1000 * interval '1 second') AS hour,
@@ -159,7 +179,8 @@ We also insert data from the staging tables into the dimensional tables:
     FROM songplays
     GROUP BY ts
     ORDER BY start_time
- """)```
+ """)
+ ```
  
 ### Files
 * ___dwh.cfg__ contains cluster credentials, the AWS role and the S3 directory locations
